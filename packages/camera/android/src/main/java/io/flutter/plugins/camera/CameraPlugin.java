@@ -23,6 +23,7 @@ import android.media.ImageReader;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.util.Size;
+import android.util.SparseIntArray;
 import android.view.Display;
 import android.view.OrientationEventListener;
 import android.view.Surface;
@@ -61,6 +62,15 @@ public class CameraPlugin implements MethodCallHandler {
   private Runnable cameraPermissionContinuation;
   private final OrientationEventListener orientationEventListener;
   private int currentOrientation = ORIENTATION_UNKNOWN;
+  private static final SparseIntArray ORIENTATIONS =
+      new SparseIntArray() {
+        {
+          append(Surface.ROTATION_0, 0);
+          append(Surface.ROTATION_90, 90);
+          append(Surface.ROTATION_180, 180);
+          append(Surface.ROTATION_270, 270);
+        }
+      };
 
   private CameraPlugin(Registrar registrar, FlutterView view) {
     this.registrar = registrar;
@@ -588,7 +598,7 @@ public class CameraPlugin implements MethodCallHandler {
         final CaptureRequest.Builder captureBuilder =
             cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
         captureBuilder.addTarget(pictureImageReader.getSurface());
-        int displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+        int displayRotation = registrar.activity().getWindowManager().getDefaultDisplay().getRotation();
         int displayOrientation = ORIENTATIONS.get(displayRotation);
         if (isFrontFacing) displayOrientation = -displayOrientation;
         captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, (-displayOrientation + sensorOrientation) % 360);
